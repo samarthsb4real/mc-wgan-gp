@@ -1,0 +1,10 @@
+.venv
+.hypothesis
+__pycache__
+.pytest_cache
+.kiro
+.vscode
+
+# Large output files — don't commit model weights or generated images
+
+data/

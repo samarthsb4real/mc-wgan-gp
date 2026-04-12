@@ -1,0 +1,168 @@
+samarth@neopr2ne:~/projects/gan$ python3 run.py 
+Device        : cuda
+CUDA Available: True
+
+============================================================
+  WGAN-GP: Magnetic Tile Defect Synthesis
+  Complete End-to-End Pipeline
+============================================================
+
+============================================================
+  Starting WGAN-GP Training
+============================================================
+Total samples loaded: 2688
+
+Class Distribution:
+   Blowhole    : 230 images
+   Break       : 170 images
+   Crack       : 114 images
+   Fray        : 64 images
+   Free        : 1904 images
+   Uneven      : 206 images
+
+
+Generator Parameters  : 4,900,321
+Critic Parameters     : 718,721
+Epoch [1/50]:   0%|                                                                                                               | 0/286 [00:00<?, ?it/s]/home/samarth/.local/lib/python3.10/site-packages/torch/autograd/graph.py:769: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at ../aten/src/ATen/cuda/CublasHandlePool.cpp:135.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Epoch    1/50 | Critic Loss: -22.7764 | Generator Loss:  38.8949                                                                                          
+   Samples saved -> outputs/samples/epoch_0001.png
+Epoch    2/50 | Critic Loss: -14.2965 | Generator Loss:  32.9426                                                                                          
+Epoch    3/50 | Critic Loss: -15.8063 | Generator Loss:  39.2529                                                                                          
+Epoch    4/50 | Critic Loss: -14.4587 | Generator Loss:  40.7558                                                                                          
+Epoch    5/50 | Critic Loss: -14.8225 | Generator Loss:  34.7292                                                                                          
+Epoch    6/50 | Critic Loss: -13.3077 | Generator Loss:  42.6297                                                                                          
+Epoch    7/50 | Critic Loss: -12.8394 | Generator Loss:  32.7105                                                                                          
+Epoch    8/50 | Critic Loss: -12.6987 | Generator Loss:  35.6141                                                                                          
+Epoch    9/50 | Critic Loss: -12.1941 | Generator Loss:  37.7444                                                                                          
+Epoch   10/50 | Critic Loss: -11.5944 | Generator Loss:  34.5788                                                                                          
+   Samples saved -> outputs/samples/epoch_0010.png
+Epoch   11/50 | Critic Loss: -11.9377 | Generator Loss:  35.2971                                                                                          
+Epoch   12/50 | Critic Loss: -11.4033 | Generator Loss:  35.8800                                                                                          
+Epoch   13/50 | Critic Loss: -11.0614 | Generator Loss:  21.7289                                                                                          
+Epoch   14/50 | Critic Loss: -10.3700 | Generator Loss:  17.3195                                                                                          
+Epoch   15/50 | Critic Loss: -11.4370 | Generator Loss:  16.6666                                                                                          
+Epoch   16/50 | Critic Loss: -10.3353 | Generator Loss:  42.3955                                                                                          
+Epoch   17/50 | Critic Loss: -10.0551 | Generator Loss:  29.9913                                                                                          
+Epoch   18/50 | Critic Loss: -10.0774 | Generator Loss:  42.6194                                                                                          
+Epoch   19/50 | Critic Loss:  -9.8322 | Generator Loss:  24.2140                                                                                          
+Epoch   20/50 | Critic Loss:  -9.8268 | Generator Loss:  21.3624                                                                                          
+   Samples saved -> outputs/samples/epoch_0020.png
+Epoch   21/50 | Critic Loss: -10.0685 | Generator Loss:  27.5480                                                                                          
+Epoch   22/50 | Critic Loss: -10.7132 | Generator Loss:  19.5305                                                                                          
+Epoch   23/50 | Critic Loss:  -9.9705 | Generator Loss:  25.0455                                                                                          
+Epoch   24/50 | Critic Loss: -10.0365 | Generator Loss:  28.5614                                                                                          
+Epoch   25/50 | Critic Loss:  -9.9741 | Generator Loss:  11.8105                                                                                          
+Epoch   26/50 | Critic Loss:  -9.1865 | Generator Loss:  15.8779                                                                                          
+Epoch   27/50 | Critic Loss: -10.2869 | Generator Loss:  28.1910                                                                                          
+Epoch   28/50 | Critic Loss:  -9.0842 | Generator Loss:  26.7630                                                                                          
+Epoch   29/50 | Critic Loss:  -9.2845 | Generator Loss:  17.8747                                                                                          
+Epoch   30/50 | Critic Loss:  -8.5343 | Generator Loss:  -3.0025                                                                                          
+   Samples saved -> outputs/samples/epoch_0030.png
+Epoch   31/50 | Critic Loss:  -9.9535 | Generator Loss:  22.7722                                                                                          
+Epoch   32/50 | Critic Loss:  -9.5514 | Generator Loss:   4.7811                                                                                          
+Epoch   33/50 | Critic Loss: -10.0838 | Generator Loss:   3.0329                                                                                          
+Epoch   34/50 | Critic Loss:  -9.6324 | Generator Loss:   7.4057                                                                                          
+Epoch   35/50 | Critic Loss: -10.0656 | Generator Loss:   5.8221                                                                                          
+Epoch   36/50 | Critic Loss:  -9.8243 | Generator Loss: -16.3169                                                                                          
+Epoch   37/50 | Critic Loss:  -9.6051 | Generator Loss:  -8.4951                                                                                          
+Epoch   38/50 | Critic Loss:  -9.9520 | Generator Loss:  27.6190                                                                                          
+Epoch   39/50 | Critic Loss: -10.4562 | Generator Loss:  29.9670                                                                                          
+Epoch   40/50 | Critic Loss:  -9.9531 | Generator Loss:  26.1164                                                                                          
+   Samples saved -> outputs/samples/epoch_0040.png
+Epoch   41/50 | Critic Loss:  -9.5892 | Generator Loss:  16.0348                                                                                          
+Epoch   42/50 | Critic Loss: -10.8207 | Generator Loss:   2.3011                                                                                          
+Epoch   43/50 | Critic Loss:  -8.8339 | Generator Loss:  18.0376                                                                                          
+Epoch   44/50 | Critic Loss: -10.5930 | Generator Loss:   2.4416                                                                                          
+Epoch   45/50 | Critic Loss:  -9.5821 | Generator Loss:  14.2611                                                                                          
+Epoch   46/50 | Critic Loss: -10.3070 | Generator Loss:   6.9646                                                                                          
+Epoch   47/50 | Critic Loss:  -9.9183 | Generator Loss: -29.2367                                                                                          
+Epoch   48/50 | Critic Loss:  -8.4866 | Generator Loss: -26.3440                                                                                          
+Epoch   49/50 | Critic Loss:  -8.8799 | Generator Loss: -30.6361                                                                                          
+Epoch   50/50 | Critic Loss:  -9.3872 | Generator Loss: -23.3015                                                                                          
+   Samples saved -> outputs/samples/epoch_0050.png
+
+Training Complete.
+Training curves saved -> outputs/training_curves.png
+
+Generating 200 synthetic images per class...
+   Blowhole    : 200 images saved
+   Break       : 200 images saved
+   Crack       : 200 images saved
+   Fray        : 200 images saved
+   Free        : 200 images saved
+   Uneven      : 200 images saved
+
+All synthetic images saved to: data/augmented/
+
+Phase 3: Training Baseline Classifier (original data only)
+
+============================================================
+  Training Classifier — Baseline
+============================================================
+  Epoch   1 | Train Acc: 72.81% | Val Acc: 72.52% | Best: 72.52%                                                                                          
+  Epoch   5 | Train Acc: 78.94% | Val Acc: 78.47% | Best: 78.47%                                                                                          
+  Epoch  10 | Train Acc: 81.65% | Val Acc: 80.45% | Best: 80.45%                                                                                          
+  Epoch  15 | Train Acc: 82.88% | Val Acc: 80.94% | Best: 82.43%                                                                                          
+  Epoch  20 | Train Acc: 84.89% | Val Acc: 81.93% | Best: 83.42%                                                                                          
+
+  Best Validation Accuracy (Baseline): 83.42%
+
+  Final Classification Report:
+              precision    recall  f1-score   support
+
+    Blowhole       0.68      0.68      0.68        37
+       Break       0.78      0.28      0.41        25
+       Crack       0.56      0.25      0.34        20
+        Fray       1.00      0.25      0.40         8
+        Free       0.83      1.00      0.91       268
+      Uneven       1.00      0.54      0.70        46
+
+    accuracy                           0.82       404
+   macro avg       0.81      0.50      0.57       404
+weighted avg       0.82      0.82      0.79       404
+
+Confusion matrix saved -> confusion_matrix_Baseline.png
+
+Phase 4: Training Augmented Classifier (original + GAN data)
+Augmented dataset size: 3888
+
+============================================================
+  Training Classifier — WGAN-GP Augmented
+============================================================
+  Epoch   1 | Train Acc: 61.32% | Val Acc: 64.85% | Best: 64.85%                                                                                          
+  Epoch   5 | Train Acc: 70.96% | Val Acc: 72.52% | Best: 72.52%                                                                                          
+  Epoch  10 | Train Acc: 77.31% | Val Acc: 58.42% | Best: 72.52%                                                                                          
+  Epoch  15 | Train Acc: 81.89% | Val Acc: 63.37% | Best: 73.27%                                                                                          
+  Epoch  20 | Train Acc: 84.83% | Val Acc: 64.11% | Best: 73.27%                                                                                          
+
+  Best Validation Accuracy (WGAN-GP Augmented): 73.27%
+
+  Final Classification Report:
+              precision    recall  f1-score   support
+
+    Blowhole       0.55      0.78      0.64        37
+       Break       0.17      0.84      0.28        25
+       Crack       0.69      0.45      0.55        20
+        Fray       1.00      0.12      0.22         8
+        Free       0.95      0.65      0.77       268
+      Uneven       0.96      0.52      0.68        46
+
+    accuracy                           0.64       404
+   macro avg       0.72      0.56      0.52       404
+weighted avg       0.85      0.64      0.70       404
+
+Confusion matrix saved -> confusion_matrix_WGAN-GP Augmented.png
+WARNING: torch-fidelity not installed. Run: pip install torch-fidelity
+Results comparison saved -> outputs/results_comparison.png
+
+============================================================
+  PIPELINE COMPLETE — SUMMARY
+============================================================
+  Baseline Classifier Accuracy  : 83.42%
+  Augmented Classifier Accuracy : 73.27%
+  Improvement                   : +-10.15%
+
+  All outputs saved to: outputs/
+============================================================
+samarth@neopr2ne:~/projects/gan$ 
