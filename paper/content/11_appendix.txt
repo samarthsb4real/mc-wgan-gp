@@ -1,0 +1,133 @@
+APPENDIX
+=========
+
+A. IMPLEMENTATION DETAILS
+===========================
+
+A.1 Software and Hardware
+---------------------------
+  Framework:    PyTorch 2.x
+  GPU:          NVIDIA GeForce GTX 1650 (4GB VRAM)
+  OS:           Ubuntu 22.04
+  Python:       3.10
+  Key libraries: torchvision, scikit-learn, scipy, opencv-python,
+                 matplotlib, seaborn, tensorboard, hypothesis
+
+A.2 Reproducibility
+--------------------
+All experiments use random seed 42 for Python, NumPy, PyTorch, and CUDA.
+torch.backends.cudnn.deterministic = True ensures reproducible GPU operations.
+The stratified split and 5-fold CV use the same seed across all conditions.
+
+A.3 Preprocessing Pipeline (preprocess.py)
+--------------------------------------------
+The preprocessing script performs the following steps:
+1. Scan all (image, mask) pairs per class from data/MT_*/Imgs/
+2. Pad each image to square using mean intensity as fill value
+3. Resize to 128×128 using bilinear interpolation (images) or
+   nearest-neighbor (masks)
+4. Binarize masks at threshold 127
+5. Save preprocessed files to data/processed/<CLASS>/imgs/ and masks/
+6. Compute and save dataset statistics to data/processed/stats.json
+
+Runtime: ~2 minutes on CPU for 1,344 image pairs.
+
+A.4 GAN Training Time
+----------------------
+  Per epoch: ~90 seconds on GTX 1650
+  100 epochs: ~150 minutes total
+  Best checkpoint (epoch 26): ~40 minutes from start
+
+A.5 Classifier Training Time
+------------------------------
+  Per fold: ~8 minutes (25 epochs × ~20 seconds/epoch)
+  5-fold CV × 3 conditions: ~120 minutes total
+
+B. ADDITIONAL RESULTS
+======================
+
+B.1 Per-Fold Accuracy Breakdown
+---------------------------------
+  Fold | Baseline | GAN Aug. | Oversampling
+  -----|----------|----------|-------------
+    1  |  96.65%  |  95.17%  |   96.65%
+    2  |  95.91%  |  94.42%  |   97.40%
+    3  |  94.80%  |  93.68%  |   96.65%
+    4  |  91.08%  |  94.05%  |   96.28%
+    5  |  94.78%  |  94.78%  |   96.27%
+  Mean |  94.64%  |  94.42%  |   96.65%
+  Std  |   1.92%  |   0.52%  |    0.41%
+
+B.2 Full Per-Class F1 Scores (5-Fold CV Mean ± Std)
+------------------------------------------------------
+  Class    | Baseline        | GAN Aug.        | Oversampling
+  ---------|-----------------|-----------------|----------------
+  Blowhole | 0.952 ± 0.026   | 0.931 ± 0.016   | 0.966 ± 0.010
+  Break    | 0.851 ± 0.090   | 0.867 ± 0.014   | 0.911 ± 0.034
+  Crack    | 0.915 ± 0.063   | 0.848 ± 0.065   | 0.926 ± 0.040
+  Fray     | 0.806 ± 0.079   | 0.812 ± 0.098   | 0.830 ± 0.068
+  Free     | 0.964 ± 0.011   | 0.964 ± 0.004   | 0.979 ± 0.004
+  Uneven   | 0.939 ± 0.042   | 0.957 ± 0.027   | 0.967 ± 0.029
+
+B.3 McNemar's Test Contingency Tables
+---------------------------------------
+Baseline vs. GAN Augmented (n=1,344):
+  Both correct:              1,195
+  Baseline only correct:        73
+  GAN Augmented only correct:   74
+  Both wrong:                    2
+  χ² = 0.0449, p = 0.8321 (NOT SIGNIFICANT)
+
+Baseline vs. Oversampling (n=1,344):
+  Both correct:              1,195
+  Baseline only correct:        49
+  Oversampling only correct:    79
+  Both wrong:                   21
+  χ² = 12.291, p = 0.0005 (SIGNIFICANT ***)
+
+GAN Augmented vs. Oversampling (n=1,344):
+  Both correct:              1,192
+  GAN Aug. only correct:        46
+  Oversampling only correct:    80
+  Both wrong:                   26
+  χ² = 13.565, p = 0.0002 (SIGNIFICANT ***)
+
+B.4 FID Computation Details
+-----------------------------
+InceptionV3 features are extracted using a forward hook on the avgpool layer
+(2048-dim). For small sample sizes, PCA reduces dimensionality to
+min(n_samples - 1, 64) before computing mean and covariance.
+
+FID formula:
+  FID = ||μ_r - μ_g||² + Tr(Σ_r + Σ_g - 2(Σ_r Σ_g)^(1/2))
+
+Numerical stability: diagonal regularization ε=1e-6 is added to covariance
+matrices before matrix square root computation. Complex components with
+imaginary magnitude > 0.01 are treated as degenerate (FID = ∞).
+
+C. FIGURE CAPTIONS
+===================
+
+Figure 1: MC-WGAN-GP architecture diagram showing the generator with 5 mask
+injection points (①–⑤), auxiliary segmentation head, and 2-channel critic.
+
+Figure 2: Training dynamics over 100 epochs. Left: Wasserstein distance
+(peak at epoch 26, dashed line). Center: Critic loss. Right: Generator loss.
+
+Figure 3: Defect mask coverage by class. Minority classes (Break, Crack, Fray)
+highlighted in orange. Note the 34× range from Blowhole (0.2%) to Uneven (23.9%).
+
+Figure 4: Minority class F1 scores across three conditions (5-fold CV mean ± std).
+Error bars show standard deviation across folds.
+
+Figure 5: Accuracy distribution across 5 folds. Box plots with individual fold
+points overlaid. Oversampling shows both higher mean and lower variance.
+
+Figure 6: Real vs. synthetic image variance comparison. Synth/real ratios of
+0.82–0.92 confirm non-trivial signal content in synthetic images.
+
+Figure 7: Side-by-side confusion matrices for baseline (left) and GAN augmented
+(right) classifiers on the validation set.
+
+Figure 8: Summary bar charts showing 5-fold CV accuracy (left) and macro F1
+(right) for all three conditions with error bars.

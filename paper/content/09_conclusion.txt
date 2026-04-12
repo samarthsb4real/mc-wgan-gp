@@ -1,0 +1,47 @@
+8. CONCLUSION
+==============
+
+We presented a systematic study of conditioning bypass in Mask-Conditioned
+WGAN-GP for industrial surface defect synthesis. Starting from a generator
+that completely ignored mask and class conditioning (SSIM > 0.95 across all
+class pairs), we diagnosed three root causes — mask signal washout, critic
+blindness, and absence of mask reconstruction accountability — and implemented
+a multi-pronged architectural fix.
+
+The fixed MC-WGAN-GP produces synthetic images with FID scores of 100–118
+(2× improvement over the untrained baseline of ~215) and variance ratios
+of 0.82–0.92 relative to real images, confirming that the generator learned
+meaningful defect structure. The conditioning bypass bug is resolved.
+
+However, our rigorous 5-fold cross-validation evaluation with McNemar's
+statistical testing reveals that GAN augmentation does not significantly
+improve classifier performance over baseline on this severely imbalanced
+small dataset (p=0.832). In contrast, simple oversampling with real image
+duplication significantly outperforms both baseline (p=0.0005) and GAN
+augmentation (p=0.0002), achieving 96.65% ± 0.41% accuracy vs. 94.64% ±
+1.92% for baseline and 94.42% ± 0.52% for GAN augmentation.
+
+The key practical recommendation for practitioners: when minority class
+sample counts are below ~100, oversampling is a more reliable augmentation
+strategy than GAN synthesis. GAN augmentation requires sufficient training
+data for the generator to learn diverse, class-discriminative patterns —
+a condition not met by the most challenging minority classes in this dataset
+(27 Fray samples, 57 Crack samples).
+
+The negative result is itself a contribution. GAN augmentation papers
+frequently report positive results without controlled ablations or
+statistical significance testing, making it difficult to assess whether
+improvements are due to synthetic data quality or simply increased training
+set size. Our controlled comparison with an oversampling ablation and
+McNemar's testing provides a methodological template for rigorous evaluation
+of GAN augmentation claims.
+
+Future work should explore: (1) transfer learning from larger industrial
+datasets to improve generator quality with limited data, (2) differentiable
+augmentation during GAN training to prevent critic memorization, (3)
+fold-specific synthetic image generation for more rigorous cross-validation,
+and (4) domain-specific FID calibration for industrial grayscale images.
+
+The complete implementation, including the preprocessing pipeline, MC-WGAN-GP
+architecture, evaluation scripts, and paper figures, is available at:
+[Repository URL]

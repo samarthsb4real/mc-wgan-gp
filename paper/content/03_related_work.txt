@@ -1,0 +1,88 @@
+2. RELATED WORK
+===============
+
+2.1 GAN-Based Data Augmentation
+--------------------------------
+Since the introduction of GANs by Goodfellow et al. [2014], numerous works
+have explored their use for data augmentation in classification tasks.
+Shrivastava et al. [2017] demonstrated that synthetic images from GANs can
+improve classifier performance when real data is scarce. Frid-Adar et al.
+[2018] applied GANs to augment liver lesion datasets, showing improvements
+in CNN classification accuracy. However, these works typically operate on
+datasets with hundreds to thousands of samples per class — a regime
+substantially different from the severely imbalanced industrial inspection
+setting we consider.
+
+More recent work has highlighted the limitations of GAN augmentation.
+Bowles et al. [2018] found that GAN augmentation can hurt performance when
+the generator produces out-of-distribution samples. Tanaka et al. [2019]
+showed that oversampling with simple duplication often matches or outperforms
+GAN augmentation on small datasets, a finding consistent with our results.
+
+2.2 Conditional and Mask-Conditioned GANs
+------------------------------------------
+Conditional GANs (cGANs) [Mirza and Osindero, 2014] extend the GAN framework
+by conditioning both generator and discriminator on auxiliary information
+such as class labels. Pix2Pix [Isola et al., 2017] demonstrated image-to-image
+translation conditioned on spatial maps, establishing the paradigm of
+mask-conditioned generation. SPADE [Park et al., 2019] introduced spatially
+adaptive normalization for semantic image synthesis, showing that spatial
+conditioning at multiple decoder layers prevents signal washout — a key
+insight that motivates our multi-point injection approach.
+
+The conditioning bypass failure we identify is related to the "posterior
+collapse" phenomenon in conditional VAEs [Lucas et al., 2019] and the
+"mode dropping" failure in GANs [Srivastava et al., 2017]. However, to our
+knowledge, the specific failure mode of spatial mask conditioning bypass —
+where the generator produces identical outputs regardless of mask geometry —
+has not been formally characterized in the industrial inspection literature.
+
+2.3 Industrial Defect Detection and Synthesis
+----------------------------------------------
+Industrial surface defect detection has been studied extensively using
+classical computer vision [Xie, 2008] and deep learning approaches
+[Weimer et al., 2016]. The Magnetic Tile dataset [Huang et al., 2020]
+has become a standard benchmark, with reported classification accuracies
+of 95–99% using ResNet and EfficientNet architectures.
+
+GAN-based synthesis for industrial defects has been explored by several
+groups. Niu et al. [2020] applied DCGAN to generate steel surface defects,
+reporting improved classifier performance. Dong et al. [2019] used
+conditional GANs for fabric defect synthesis. However, these works
+typically do not include rigorous statistical significance testing or
+controlled ablation studies comparing GAN augmentation to oversampling,
+making it difficult to assess whether the reported improvements are due
+to synthetic data quality or simply increased training set size.
+
+2.4 WGAN-GP and Training Stability
+------------------------------------
+The Wasserstein GAN [Arjovsky et al., 2017] addresses training instability
+in standard GANs by replacing the Jensen-Shannon divergence with the
+Wasserstein-1 distance, providing more meaningful gradients throughout
+training. The gradient penalty variant [Gulrajani et al., 2017] enforces
+the Lipschitz constraint through a differentiable penalty term, enabling
+stable training without weight clipping. We adopt WGAN-GP as our base
+framework due to its established stability properties.
+
+The Two Time-Scale Update Rule (TTUR) [Heusel et al., 2017] proposes
+using different learning rates for generator and discriminator to achieve
+local Nash equilibria. We adopt TTUR with a 2:1 critic-to-generator
+learning rate ratio, reduced from the commonly used 4:1 ratio to prevent
+critic dominance on our small dataset.
+
+2.5 Evaluation of Synthetic Data Quality
+------------------------------------------
+The Fréchet Inception Distance (FID) [Heusel et al., 2017] measures the
+distance between real and synthetic image distributions in InceptionV3
+feature space. FID has become the standard metric for GAN evaluation,
+with scores below 50 generally considered high quality for natural images.
+For industrial grayscale images with constrained textures and small sample
+sizes, FID computation requires careful handling of degenerate covariance
+matrices — we address this through PCA dimensionality reduction before
+FID computation.
+
+McNemar's test [McNemar, 1947] is the appropriate statistical test for
+comparing two classifiers on the same test set, as it accounts for the
+paired nature of predictions. Despite its importance, McNemar's test is
+rarely applied in GAN augmentation papers, making it difficult to assess
+whether reported improvements are statistically significant.

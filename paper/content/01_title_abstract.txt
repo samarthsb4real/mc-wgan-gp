@@ -1,0 +1,54 @@
+TITLE
+=====
+Conditioning Bypass in Mask-Conditioned GANs: Diagnosis, Fix, and Evaluation
+on Industrial Surface Defect Data
+
+AUTHORS
+=======
+[Author Names]
+[Institution]
+[Email]
+
+ABSTRACT
+========
+Generative Adversarial Networks (GANs) have shown promise for augmenting
+imbalanced industrial inspection datasets, where minority defect classes are
+severely underrepresented. However, conditioning mechanisms in GANs are
+susceptible to bypass failures — where the generator learns to ignore
+conditioning signals and collapses to a single output mode regardless of
+the provided class label or spatial mask. In this work, we identify, diagnose,
+and fix a conditioning bypass bug in a Mask-Conditioned Wasserstein GAN with
+Gradient Penalty (MC-WGAN-GP) trained on the Magnetic Tile surface defect
+dataset (1,344 images, 6 classes, severe imbalance: 27–952 samples per class).
+
+The original architecture suffered from three compounding failure modes:
+(1) mask signal washout due to single-point injection, (2) critic blindness
+to spatial masks providing no gradient pressure for mask-consistent generation,
+and (3) absence of auxiliary mask reconstruction accountability. We address
+these through a multi-point mask injection scheme (5 injection points across
+the generator decoder), a 2-channel critic input (image + mask), and an
+auxiliary segmentation head trained with binary cross-entropy loss.
+
+We evaluate the fixed architecture using 5-fold stratified cross-validation
+with three conditions: baseline (real data only), GAN augmentation (real +
+200 synthetic images per minority class), and oversampling ablation (real
+data duplicated to equivalent counts). McNemar's test confirms that GAN
+augmentation does not significantly differ from baseline (p=0.832), while
+oversampling significantly outperforms both baseline (p=0.0005) and GAN
+augmentation (p=0.0002). Per-class FID scores of 100–118 (vs. ~215 for the
+untrained generator) confirm the fixed generator learned meaningful structure.
+Synthetic image variance ratios of 0.82–0.92 relative to real images confirm
+non-trivial signal content.
+
+Our results suggest that for severely imbalanced datasets with fewer than
+100 minority class samples, GAN augmentation does not provide statistically
+significant improvement over simple oversampling, and may introduce
+distributional mismatch that degrades classifier performance. We provide
+a complete analysis of failure modes, training dynamics, and recommendations
+for practitioners.
+
+KEYWORDS
+========
+Generative Adversarial Networks, WGAN-GP, Conditional GAN, Data Augmentation,
+Industrial Defect Detection, Class Imbalance, Mask Conditioning, Surface
+Defect Classification, Magnetic Tile Dataset

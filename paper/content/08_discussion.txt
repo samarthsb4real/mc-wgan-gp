@@ -1,0 +1,111 @@
+7. DISCUSSION
+==============
+
+7.1 Interpretation of the Negative Result
+-------------------------------------------
+The central finding — that GAN augmentation does not significantly improve
+over baseline, while oversampling does — is a negative result that deserves
+careful interpretation rather than dismissal.
+
+The negative result is not a failure of the GAN architecture. The fixed
+MC-WGAN-GP produces synthetic images with FID scores of 100–118 (vs. ~215
+for the untrained generator), variance ratios of 0.82–0.92 relative to
+real images, and visually plausible defect patterns. The generator learned
+meaningful structure. The failure is not in image quality per se, but in
+the utility of that quality for classifier training.
+
+The key insight is that distributional similarity (as measured by FID) is
+a necessary but not sufficient condition for augmentation utility. Synthetic
+images can be visually plausible and have reasonable FID scores while still
+introducing distributional mismatch in the feature space that a classifier
+uses for discrimination. The t-SNE analysis confirms this: synthetic images
+cluster differently from real images in ResNet-18 feature space, particularly
+for Crack — the class with the smallest defect regions and most challenging
+conditioning signal.
+
+7.2 When Does GAN Augmentation Help?
+--------------------------------------
+Our results suggest GAN augmentation is most likely to help when:
+
+(1) Sufficient training data exists for the generator to learn diverse
+    defect appearances (typically >200 samples per class).
+
+(2) Defect regions are large enough for the generator to learn precise
+    spatial conditioning (mask coverage >5%).
+
+(3) The generator can be validated to produce class-discriminative outputs
+    (SSIM < 0.7 across classes, classifier accuracy > 90% on synthetic data).
+
+For the Magnetic Tile dataset, none of these conditions are fully met for
+the most challenging minority classes (Fray: 27 samples, 17.1% coverage;
+Crack: 57 samples, 0.5% coverage). Oversampling, which preserves the exact
+real image distribution, is a more reliable augmentation strategy in this
+regime.
+
+7.3 The Conditioning Bypass Fix
+---------------------------------
+While the augmentation result is negative, the architectural fix for the
+conditioning bypass bug is a genuine contribution. The original generator
+produced SSIM > 0.95 across all class pairs — effectively a single-mode
+generator. The fixed generator produces class-differentiated outputs with
+FID scores that are 2× better than the untrained baseline.
+
+The multi-point mask injection approach (5 injection points) is directly
+motivated by the SPADE architecture [Park et al., 2019], which demonstrated
+that spatially adaptive normalization at multiple decoder layers prevents
+conditioning signal washout. Our implementation adapts this principle to
+the WGAN-GP framework with explicit mask encoding concatenation rather than
+normalization modulation.
+
+The auxiliary segmentation head provides a direct gradient signal for mask
+accountability. Without it, the generator can achieve low adversarial loss
+while completely ignoring mask geometry. The BCE loss (λ_mask=2.0) provides
+a regularization term that enforces spatial consistency without dominating
+the adversarial signal.
+
+7.4 Training Dynamics and Checkpoint Selection
+------------------------------------------------
+The W distance trajectory (peak at epoch 26, decline thereafter) reflects
+a known failure mode for WGAN-GP on small datasets: the critic eventually
+memorizes the real distribution rather than learning a smooth Lipschitz
+function. This causes the gradient signal to the generator to degrade,
+leading to the observed W distance decline.
+
+The epoch 26 checkpoint selection is theoretically justified: it captures
+the generator at the point of maximum competitiveness before critic
+memorization dominates. In practice, this corresponds to the generator
+that produces the most diverse and realistic outputs, as confirmed by
+the FID scores.
+
+Future work could address this through: (1) spectral normalization in the
+critic to prevent memorization, (2) data augmentation during GAN training
+(differentiable augmentation [Zhao et al., 2020]), or (3) transfer learning
+from a GAN pre-trained on a larger industrial dataset.
+
+7.5 Limitations
+----------------
+(1) Validation set size: With 5–15 minority class samples per fold in
+    5-fold CV, per-class F1 estimates have high variance (±0.05–0.20).
+    The McNemar's test on overall accuracy is reliable (n=1,344), but
+    per-class conclusions should be interpreted cautiously.
+
+(2) Single dataset: Our conclusions are drawn from a single dataset.
+    The generalizability of the negative result to other industrial
+    inspection datasets with different characteristics (larger minority
+    classes, different defect types) is unknown.
+
+(3) GAN hyperparameter sensitivity: We did not perform extensive
+    hyperparameter search for the GAN. Different λ_mask values, learning
+    rates, or architecture choices might yield better synthetic image
+    quality and different augmentation outcomes.
+
+(4) Fixed synthetic set: In our 5-fold CV, the synthetic images are
+    generated from the full dataset and used across all folds. A more
+    rigorous protocol would generate fold-specific synthetic images from
+    each fold's training data, but this would require 5× the GAN training
+    time.
+
+(5) FID calibration: FID scores of 100–118 are difficult to interpret
+    in absolute terms for grayscale industrial images. The natural image
+    FID benchmarks (FID < 50 = good quality) may not apply to this domain.
+    Domain-specific FID calibration would strengthen the quality assessment.

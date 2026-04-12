@@ -1,0 +1,120 @@
+5. EXPERIMENTAL SETUP
+======================
+
+5.1 GAN Training
+-----------------
+The MC-WGAN-GP was trained for 100 epochs on the full training split
+(1,142 images) using the configuration described in Section 4.8. Training
+was performed on an NVIDIA GeForce GTX 1650 GPU (4GB VRAM).
+
+Training dynamics: The Wasserstein distance increased from 18.1 at epoch 1
+to a peak of 53.97 at epoch 26, then gradually declined to 36.2 at epoch 100.
+This trajectory indicates the critic eventually dominated the adversarial
+game — a known failure mode for WGAN-GP on small datasets where the critic
+can memorize the real distribution. We selected the epoch 26 checkpoint
+(peak W distance) as the best generator, as this corresponds to the point
+of maximum generator competitiveness before critic memorization dominates.
+
+Generator loss increased monotonically from 11.1 (epoch 1) to 132.7
+(epoch 100). This behavior is expected in WGAN-GP: as the critic strengthens,
+the generator loss (which includes the adversarial term -D(fake)) increases.
+Generator loss alone is not a meaningful quality metric in WGAN-GP.
+
+5.2 Synthetic Image Generation
+--------------------------------
+Using the epoch 26 checkpoint, we generated 200 synthetic images per
+minority class (Break, Crack, Fray), conditioned on randomly sampled
+real segmentation masks from each class. Generation was restricted to
+minority classes only; majority classes (Blowhole, Free, Uneven) were
+not augmented, as adding synthetic majority class images would worsen
+the existing imbalance.
+
+Total synthetic images: 600 (200 × 3 minority classes)
+
+5.3 FID Quality Gating
+------------------------
+We computed per-class FID scores between real and synthetic image
+distributions using InceptionV3 features. Due to small sample sizes
+(27–85 real images per minority class), the 2048-dimensional InceptionV3
+feature space produces degenerate covariance matrices. We address this
+through PCA dimensionality reduction to min(n_samples - 1, 64) dimensions
+before FID computation.
+
+FID results (epoch 26 checkpoint):
+  Break: FID = 100.32  [PASS, threshold = 300]
+  Crack: FID = 117.94  [PASS, threshold = 300]
+  Fray:  FID = 112.30  [PASS, threshold = 300]
+
+For reference, the untrained generator produces FID ≈ 215 for all classes,
+confirming that the trained generator learned meaningful structure (2× FID
+improvement). All three minority classes passed the quality gate.
+
+Synthetic image variance analysis confirmed non-trivial signal content:
+  Break: synth/real variance ratio = 0.924
+  Crack: synth/real variance ratio = 0.826
+  Fray:  synth/real variance ratio = 0.820
+
+Ratios of 0.82–0.92 indicate the synthetic images have similar texture
+complexity to real images, ruling out the possibility of blank or noise-only
+generation.
+
+5.4 Classifier Architecture
+-----------------------------
+We use ResNet-18 [He et al., 2016] pre-trained on ImageNet, adapted for
+1-channel grayscale input by averaging the RGB weights of the first
+convolutional layer. The final fully-connected layer is replaced with
+FC(512, 6) for 6-class classification.
+
+Classifier training configuration:
+  Optimizer:    Adam (lr=1e-4, weight_decay=1e-4)
+  LR schedule:  Cosine annealing over 25 epochs
+  Loss:         CrossEntropyLoss with class weights (inverse frequency)
+  Class weights: [1.95, 2.64, 3.93, 7.00, 0.24, 2.17]
+                 (Blowhole, Break, Crack, Fray, Free, Uneven)
+  Batch size:   16
+  Epochs:       25
+
+Class-weighted loss is critical for this dataset: without it, the classifier
+can achieve ~71% accuracy by predicting Free for all samples, ignoring all
+defect classes.
+
+5.5 Evaluation Protocol
+------------------------
+We evaluate three conditions using 5-fold stratified cross-validation:
+
+  Condition 1 — Baseline:
+    Training data: 1,142 real images only
+    No augmentation
+
+  Condition 2 — GAN Augmented:
+    Training data: 1,142 real + 600 synthetic images (200 per minority class)
+    Synthetic images are fixed across all folds (generated from full dataset)
+    Validation folds contain only real images (no data leakage)
+
+  Condition 3 — Oversampling Ablation:
+    Training data: 1,142 real images + minority class duplication
+    Minority classes duplicated to match GAN augmented counts:
+      Break: +200 duplicated samples, Crack: +200, Fray: +200
+    This controls for training set size, isolating the effect of
+    synthetic data quality vs. quantity
+
+Data leakage prevention: Synthetic images are never included in validation
+folds. An explicit assertion verifies val_synth=0 for every fold.
+
+5.6 Statistical Testing
+------------------------
+We apply McNemar's test [McNemar, 1947] with Yates' continuity correction
+to compare classifier pairs on the full 5-fold CV predictions (n=1,344).
+McNemar's test is appropriate for paired nominal data where two classifiers
+are evaluated on the same samples.
+
+Test statistic: χ² = (|b01 - b10| - 1)² / (b01 + b10)
+where b01 = samples correct by A but wrong by B
+      b10 = samples correct by B but wrong by A
+
+Significance threshold: α = 0.05 (two-tailed)
+
+Three pairwise comparisons are performed:
+  1. Baseline vs. GAN Augmented
+  2. Baseline vs. Oversampling
+  3. GAN Augmented vs. Oversampling

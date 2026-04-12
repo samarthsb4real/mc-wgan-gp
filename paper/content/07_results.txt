@@ -1,0 +1,121 @@
+6. RESULTS AND ANALYSIS
+========================
+
+6.1 GAN Training Dynamics
+---------------------------
+Figure 2 shows the training dynamics over 100 epochs. The Wasserstein
+distance peaked at epoch 26 (W=53.97) and declined thereafter, indicating
+the critic eventually dominated. The critic loss stabilized around -30 to
+-40 from epoch 20 onward. Generator loss increased monotonically, which
+is expected behavior in WGAN-GP as the critic strengthens.
+
+The epoch 26 checkpoint was selected as the best generator based on peak
+Wasserstein distance, corresponding to the point of maximum generator
+competitiveness before critic memorization dominates.
+
+6.2 Synthetic Image Quality
+-----------------------------
+Per-class FID scores from the epoch 26 checkpoint:
+  Break: 100.32  |  Crack: 117.94  |  Fray: 112.30
+
+All three minority classes passed the quality gate (threshold=300).
+The untrained generator baseline FID of ~215 confirms the trained
+generator achieved a 2× improvement in distributional similarity.
+
+Synthetic image variance ratios (synth/real): 0.924 (Break), 0.826 (Crack),
+0.820 (Fray). These ratios confirm the synthetic images carry real signal
+rather than noise or blank outputs.
+
+6.3 5-Fold Cross-Validation Results
+--------------------------------------
+Table 4 presents the main results across all three conditions:
+
+  Condition        | Accuracy (%)      | Macro F1 | Break F1 (%)      | Crack F1 (%)      | Fray F1 (%)
+  -----------------|-------------------|----------|-------------------|-------------------|------------------
+  Baseline         | 94.64 ± 1.92      | 0.9033   | 85.13 ± 9.02      | 91.54 ± 6.27      | 80.63 ± 7.92
+  GAN Augmented    | 94.42 ± 0.52      | 0.8947   | 86.72 ± 1.38      | 84.77 ± 6.50      | 81.23 ± 9.80
+  Oversampling     | 96.65 ± 0.41      | 0.9295   | 91.12 ± 3.43      | 92.58 ± 3.99      | 83.03 ± 6.76
+
+Key observations:
+
+(1) Oversampling significantly outperforms both baseline and GAN augmented
+    conditions in overall accuracy (+2.01% and +2.23% respectively) and
+    macro F1 (+0.026 and +0.035 respectively).
+
+(2) GAN augmentation does not significantly improve over baseline in
+    overall accuracy (-0.22%) or macro F1 (-0.009).
+
+(3) GAN augmentation reduces variance substantially: std drops from 1.92%
+    (baseline) to 0.52% (GAN augmented). This variance reduction is
+    consistent with the synthetic images providing a regularization effect,
+    but the mean performance does not improve.
+
+(4) Crack F1 decreases with GAN augmentation (91.54% → 84.77%), suggesting
+    the synthetic Crack images introduce distributional mismatch. Crack has
+    the smallest mask coverage (0.5% mean), making it the hardest class
+    for the generator to condition on correctly.
+
+(5) Break F1 shows a modest improvement with GAN augmentation
+    (85.13% → 86.72%), though this is within the noise margin.
+
+6.4 McNemar's Test Results
+----------------------------
+Table 5 presents the McNemar's test results on full 5-fold CV predictions
+(n=1,344):
+
+  Comparison                      | χ²      | p-value | Significant
+  --------------------------------|---------|---------|------------
+  Baseline vs. GAN Augmented      | 0.0449  | 0.8321  | No
+  Baseline vs. Oversampling       | 12.291  | 0.0005  | Yes ***
+  GAN Augmented vs. Oversampling  | 13.565  | 0.0002  | Yes ***
+
+The McNemar's test confirms:
+- GAN augmentation does NOT significantly differ from baseline (p=0.832).
+  The observed accuracy difference is consistent with sampling noise.
+- Oversampling IS significantly better than both baseline (p=0.0005)
+  and GAN augmentation (p=0.0002).
+
+This is the central finding of the paper: on this severely imbalanced
+small dataset, simple oversampling with real image duplication significantly
+outperforms GAN-based synthetic augmentation.
+
+6.5 Analysis of GAN Augmentation Failure
+------------------------------------------
+We identify three mechanistic explanations for why GAN augmentation
+fails to improve over baseline:
+
+(1) Distributional Mismatch: The t-SNE visualization of ResNet-18 features
+    shows that synthetic images for Crack and Fray classes occupy different
+    regions of feature space compared to real images of the same class.
+    The centroid distance between real and synthetic Crack features is
+    substantially larger than for Break, consistent with the Crack F1
+    degradation observed with GAN augmentation.
+
+(2) Insufficient Training Data for Generator: With only 27–85 real images
+    per minority class, the generator cannot learn the full diversity of
+    defect appearances. The generator tends to produce a limited set of
+    defect patterns, reducing the effective diversity of the augmented
+    training set.
+
+(3) Mask Coverage Mismatch: Crack defects have extremely small mask
+    coverage (0.5% mean), making it difficult for the generator to learn
+    spatially precise defect placement. The auxiliary segmentation head
+    loss (λ_mask=2.0) may be insufficient to enforce precise mask
+    adherence for such small defect regions.
+
+(4) Confound: Adding 600 synthetic images increases training set size by
+    52%. The oversampling ablation controls for this by duplicating real
+    images to the same count. The fact that oversampling significantly
+    outperforms GAN augmentation despite using the same training set size
+    suggests the synthetic images are of lower quality than real images
+    for classifier training purposes.
+
+6.6 Comparison with Single-Split Results
+------------------------------------------
+For reference, single-split results (85/15 train/val, no cross-validation):
+  Baseline:      95.54% val accuracy (epoch 22)
+  GAN Augmented: 93.56% val accuracy (epoch 20)
+
+These results are consistent with the 5-fold CV findings but have higher
+variance due to the small validation set (202 samples). The 5-fold CV
+results are more reliable and should be used for all comparisons.

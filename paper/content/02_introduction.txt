@@ -1,0 +1,63 @@
+1. INTRODUCTION
+===============
+
+Automated visual inspection of manufactured surfaces is a critical quality
+control task in industrial production. Deep learning classifiers have achieved
+strong performance on balanced benchmark datasets, but real-world inspection
+data is inherently imbalanced: defect classes are rare by design, as
+manufacturing processes are optimized to minimize defect rates. This creates
+a fundamental challenge — the classes most important to detect correctly
+(rare defects) are precisely those with the fewest training examples.
+
+The Magnetic Tile surface defect dataset [Huang et al., 2020] exemplifies
+this challenge. It contains 1,344 grayscale images across 6 classes, with
+class counts ranging from 27 (Fray) to 952 (Free/defect-free). Standard
+ResNet-18 classifiers trained on this data achieve high overall accuracy
+(~94–98%) but this metric is dominated by the majority Free class, which
+constitutes 71% of the dataset. Minority class F1 scores — the metrics that
+matter for defect detection — are substantially lower and highly variable.
+
+Generative Adversarial Networks (GANs) offer a principled approach to
+synthetic data augmentation: train a generator to produce realistic defect
+images conditioned on class labels and spatial masks, then augment the
+training set with synthetic minority class samples. Mask-conditioned GANs
+are particularly appealing for defect synthesis because segmentation masks
+encode the spatial geometry of defects — where on the surface the defect
+appears — providing a structural prior that should guide generation of
+spatially coherent defect patterns.
+
+However, conditional GANs are susceptible to a failure mode we term
+"conditioning bypass": the generator learns to ignore the conditioning
+signal and produces outputs that are independent of the provided condition.
+This failure is particularly insidious because the generator may still
+produce visually plausible images (passing qualitative inspection) while
+completely failing to respect class-specific conditioning. The result is
+synthetic images that are indistinguishable across classes — useless or
+harmful for augmentation.
+
+In this paper, we make the following contributions:
+
+1. We identify and formally characterize a conditioning bypass bug in a
+   Mask-Conditioned WGAN-GP architecture, demonstrating the failure through
+   cross-class SSIM analysis and minority class distinctiveness testing.
+
+2. We propose and implement a multi-pronged architectural fix comprising:
+   (a) multi-point mask injection at 5 locations in the generator decoder,
+   (b) 2-channel critic input (image + mask) for gradient pressure,
+   (c) auxiliary segmentation head with mask reconstruction loss.
+
+3. We conduct a rigorous evaluation using 5-fold stratified cross-validation
+   with McNemar's statistical significance testing, comparing GAN augmentation
+   against a properly controlled oversampling ablation baseline.
+
+4. We provide an honest analysis of the negative result: GAN augmentation
+   does not significantly improve over baseline on this severely imbalanced
+   small dataset, while oversampling does. We analyze the mechanistic reasons
+   and provide recommendations for practitioners.
+
+The remainder of this paper is organized as follows. Section 2 reviews
+related work on GAN-based augmentation and industrial defect detection.
+Section 3 describes the dataset and problem formulation. Section 4 presents
+the MC-WGAN-GP architecture and the conditioning bypass fix. Section 5
+describes the experimental setup. Section 6 presents results and analysis.
+Section 7 discusses limitations and future work. Section 8 concludes.

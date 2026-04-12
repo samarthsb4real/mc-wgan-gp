@@ -1,0 +1,146 @@
+4. MC-WGAN-GP ARCHITECTURE
+===========================
+
+4.1 Overview
+-------------
+Our Mask-Conditioned Wasserstein GAN with Gradient Penalty (MC-WGAN-GP)
+consists of three components: a MaskEncoder that encodes spatial segmentation
+masks into latent vectors, a Generator that synthesizes defect images
+conditioned on noise, class labels, and mask encodings, and a Critic that
+evaluates image-mask pairs for training stability.
+
+The key architectural novelty is multi-point mask injection: rather than
+injecting the mask encoding only at the generator input (which leads to
+signal washout), we inject it at 5 points throughout the decoder, ensuring
+mask information is preserved at all spatial resolutions.
+
+4.2 Conditioning Bypass: Diagnosis
+------------------------------------
+The original MC-WGAN-GP implementation suffered from a conditioning bypass
+bug where the generator produced visually identical outputs regardless of
+the input class label or mask geometry. We diagnosed three root causes:
+
+(1) Mask Signal Washout: The mask encoding was injected only at the
+    generator's input layer. As the signal propagated through 4 upsampling
+    blocks (8→16→32→64→128 spatial resolution), the mask information
+    washed out because there was no reinforcement at intermediate layers.
+    The generator learned to rely solely on noise and label embeddings.
+
+(2) Critic Blindness: The critic received a 3-channel input (image +
+    label map + mask), but the label map was constructed from a learned
+    embedding that could be ignored. The critic provided no direct gradient
+    pressure to penalize mask-inconsistent generations.
+
+(3) No Mask Reconstruction Accountability: The generator had no auxiliary
+    loss that directly enforced mask consistency. Without explicit
+    supervision, the generator was never penalized for ignoring mask geometry.
+
+We confirmed the bug through cross-class SSIM analysis: generating images
+for all 6 classes with the same noise vector but different masks yielded
+SSIM > 0.95 for all class pairs (images were nearly identical), compared
+to the expected SSIM < 0.70 for a correctly conditioned generator.
+
+4.3 MaskEncoder
+----------------
+The MaskEncoder encodes a binary segmentation mask (1×128×128) into a
+64-dimensional latent vector:
+
+  MaskEncoder:
+    Conv2d(1, 16, 4, 2, 1) + LeakyReLU(0.2)    → 16×64×64
+    Conv2d(16, 32, 4, 2, 1) + LeakyReLU(0.2)   → 32×32×32
+    Conv2d(32, 64, 4, 2, 1) + LeakyReLU(0.2)   → 64×16×16
+    Conv2d(64, 64, 4, 2, 1) + LeakyReLU(0.2)   → 64×8×8
+    AdaptiveAvgPool2d(4×4)                       → 64×4×4
+    FC(64×16, 64)                                → 64-dim
+
+4.4 Generator with Multi-Point Mask Injection
+----------------------------------------------
+The generator takes as input a noise vector z ∈ R^64, a class label
+y ∈ {0,...,5}, and a segmentation mask m ∈ {0,1}^(128×128).
+
+Input Fusion (Injection Point 1):
+  label_enc = LabelEmbedding(y)    → 64-dim
+  mask_enc  = MaskEncoder(m)       → 64-dim
+  fused     = Concat[z, label_enc, mask_enc]  → 192-dim
+  x         = FC(192, 256×8×8) → Reshape → 256×8×8
+
+The bottleneck features (256×8×8) are passed to the auxiliary segmentation
+head before any further injection.
+
+Decoder with Skip Injections (Points 2–5):
+  For each injection point, mask_enc is spatially broadcast to match the
+  current spatial resolution and concatenated with the feature map:
+    mask_spatial = mask_enc.unsqueeze(-1).unsqueeze(-1).expand(B, 64, H, W)
+    x = Concat[x, mask_spatial]
+
+  Point 2 (8×8):   Concat[256, 64] = 320 → ConvT(320→128) + BN + LReLU
+  Point 3 (16×16): Concat[128, 64] = 192 → ConvT(192→64)  + BN + LReLU
+  Point 4 (32×32): Concat[64, 64]  = 128 → ConvT(128→32)  + BN + LReLU
+  Point 5 (64×64): No injection    → ConvT(32→16)  + BN + LReLU
+  Final:           Conv2d(16→1) + Tanh → 1×128×128
+
+Note: The channel dimensions above reflect GEN_FEATURES=16, giving
+start_ch = 16 × 2^4 = 256. Total generator parameters: 4,974,674.
+
+4.5 Auxiliary Segmentation Head
+---------------------------------
+The segmentation head takes the bottleneck features (256×8×8) and
+reconstructs the input mask:
+
+  SegmentationHead:
+    ConvT(256→128, 4, 2, 1) + BN + LReLU  → 128×16×16
+    ConvT(128→64,  4, 2, 1) + BN + LReLU  → 64×32×32
+    ConvT(64→32,   4, 2, 1) + BN + LReLU  → 32×64×64
+    ConvT(32→16,   4, 2, 1) + BN + LReLU  → 16×128×128
+    Conv2d(16→1, 3, 1, 1) + Sigmoid        → 1×128×128
+
+The segmentation head is trained jointly with the generator using binary
+cross-entropy loss against the real input mask:
+  L_seg = BCE(pred_mask, real_mask)
+
+4.6 Critic
+-----------
+The critic accepts a 2-channel input (image + mask concatenated) and
+outputs a Wasserstein score. Label conditioning is handled by the generator
+only; the critic sees masks directly to penalize mask-inconsistent generations.
+
+  Critic:
+    Conv2d(2, 32, 4, 2, 1)                    → 32×64×64
+    Conv2d(32, 64, 4, 2, 1) + IN              → 64×32×32
+    Conv2d(64, 128, 4, 2, 1) + IN             → 128×16×16
+    Conv2d(128, 256, 4, 2, 1) + IN            → 256×8×8
+    Conv2d(256, 512, 4, 2, 1) + IN            → 512×4×4
+    Flatten + FC(512×16, 1)                    → scalar
+
+  IN = InstanceNorm2d (required for WGAN-GP; no BatchNorm in critic)
+  Total critic parameters: 2,796,417
+
+4.7 Training Objective
+------------------------
+Generator loss:
+  L_G = -E[D(G(z,y,m), m)] + λ_mask × BCE(seg_head(bottleneck), m)
+  λ_mask = 2.0
+
+Critic loss:
+  L_C = E[D(G(z,y,m), m)] - E[D(x_real, m)] + λ_GP × GP
+  λ_GP = 10
+
+Gradient penalty:
+  GP = E[(||∇D(x̂)||_2 - 1)^2]
+  where x̂ = α × x_real + (1-α) × x_fake, α ~ U[0,1]
+
+4.8 Training Configuration
+----------------------------
+  Optimizer:        Adam (β1=0.0, β2=0.9) for both G and C
+  Learning rates:   LR_G = 1e-4, LR_C = 2e-4 (TTUR, 2:1 ratio)
+  Critic steps:     3 per generator step
+  Batch size:       16
+  Epochs:           100
+  Gradient clip:    1.0 (generator only)
+  Best checkpoint:  Epoch 26 (peak Wasserstein distance = 53.97)
+
+Weighted random sampling oversamples minority classes during GAN training:
+  Fray (label=3): ×6 multiplier
+  Crack (label=2): ×3 multiplier
+  Break (label=1): ×2 multiplier
+  (on top of inverse frequency weights)

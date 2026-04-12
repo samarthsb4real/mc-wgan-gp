@@ -1,0 +1,117 @@
+REFERENCES
+===========
+
+[Arjovsky et al., 2017]
+  Arjovsky, M., Chintala, S., & Bottou, L. (2017).
+  Wasserstein GAN.
+  arXiv:1701.07875.
+
+[Bowles et al., 2018]
+  Bowles, C., Chen, L., Guerrero, R., Bentley, P., Gunn, R., Hammers, A.,
+  Dickie, D. A., Hernández, M. V., Wardlaw, J., & Rueckert, D. (2018).
+  GAN augmentation: Augmenting training data using generative adversarial
+  networks. arXiv:1810.10863.
+
+[Dong et al., 2019]
+  Dong, H., Song, K., He, Y., Xu, J., Yan, Y., & Meng, Q. (2019).
+  PGA-Net: Pyramid feature fusion and global context attention network for
+  automated surface defect detection. IEEE Transactions on Industrial
+  Informatics, 16(12), 7448–7458.
+
+[Frid-Adar et al., 2018]
+  Frid-Adar, M., Diamant, I., Klang, E., Amitai, M., Goldberger, J., &
+  Greenspan, H. (2018). GAN-based synthetic medical image augmentation for
+  increased CNN performance in liver lesion classification.
+  Neurocomputing, 321, 321–331.
+
+[Goodfellow et al., 2014]
+  Goodfellow, I., Pouget-Abadie, J., Mirza, M., Xu, B., Warde-Farley, D.,
+  Ozair, S., Courville, A., & Bengio, Y. (2014).
+  Generative adversarial nets.
+  Advances in Neural Information Processing Systems, 27.
+
+[Gulrajani et al., 2017]
+  Gulrajani, I., Ahmed, F., Arjovsky, M., Dumoulin, V., & Courville, A. (2017).
+  Improved training of Wasserstein GANs.
+  Advances in Neural Information Processing Systems, 30.
+
+[He et al., 2016]
+  He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+  Deep residual learning for image recognition.
+  Proceedings of the IEEE Conference on Computer Vision and Pattern
+  Recognition (CVPR), 770–778.
+
+[Heusel et al., 2017]
+  Heusel, M., Ramsauer, H., Unterthiner, T., Nessler, B., & Hochreiter, S.
+  (2017). GANs trained by a two time-scale update rule converge to a local
+  Nash equilibrium. Advances in Neural Information Processing Systems, 30.
+
+[Huang et al., 2020]
+  Huang, Y., Qiu, C., & Yuan, K. (2020).
+  Surface defect saliency of magnetic tile.
+  The Visual Computer, 36(1), 85–96.
+
+[Isola et al., 2017]
+  Isola, P., Zhu, J. Y., Zhou, T., & Efros, A. A. (2017).
+  Image-to-image translation with conditional adversarial networks.
+  Proceedings of the IEEE Conference on Computer Vision and Pattern
+  Recognition (CVPR), 1125–1134.
+
+[Lucas et al., 2019]
+  Lucas, J., Tucker, G., Grosse, R. B., & Norouzi, M. (2019).
+  Don't blame the ELBO! A linear VAE perspective on posterior collapse.
+  Advances in Neural Information Processing Systems, 32.
+
+[McNemar, 1947]
+  McNemar, Q. (1947).
+  Note on the sampling error of the difference between correlated
+  proportions or percentages. Psychometrika, 12(2), 153–157.
+
+[Mirza and Osindero, 2014]
+  Mirza, M., & Osindero, S. (2014).
+  Conditional generative adversarial nets.
+  arXiv:1411.1784.
+
+[Niu et al., 2020]
+  Niu, S., Li, B., Wang, X., & Lin, H. (2020).
+  Defect image sample generation with GAN for improving defect recognition.
+  IEEE Transactions on Automation Science and Engineering, 17(3), 1611–1622.
+
+[Park et al., 2019]
+  Park, T., Liu, M. Y., Wang, T. C., & Zhu, J. Y. (2019).
+  Semantic image synthesis with spatially-adaptive normalization.
+  Proceedings of the IEEE Conference on Computer Vision and Pattern
+  Recognition (CVPR), 2337–2346.
+
+[Shrivastava et al., 2017]
+  Shrivastava, A., Pfister, T., Tuzel, O., Susskind, J., Wang, W., &
+  Webb, R. (2017). Learning from simulated and unsupervised images through
+  adversarial training. Proceedings of the IEEE Conference on Computer
+  Vision and Pattern Recognition (CVPR), 2107–2116.
+
+[Srivastava et al., 2017]
+  Srivastava, A., Valkov, L., Russell, C., Gutmann, M. U., & Sutton, C.
+  (2017). VEEGAN: Reducing mode collapse in GANs using implicit variational
+  learning. Advances in Neural Information Processing Systems, 30.
+
+[Tanaka et al., 2019]
+  Tanaka, F. H. K. D. S., & Aranha, C. (2019).
+  Data augmentation using GANs.
+  arXiv:1904.09135.
+
+[Weimer et al., 2016]
+  Weimer, D., Scholz-Reiter, B., & Shpitalni, M. (2016).
+  Design of deep convolutional neural network architectures for automated
+  feature extraction in industrial inspection.
+  CIRP Annals, 65(1), 417–420.
+
+[Xie, 2008]
+  Xie, X. (2008).
+  A review of recent advances in surface defect detection using texture
+  analysis techniques. Electronic Letters on Computer Vision and Image
+  Analysis, 7(3), 1–22.
+
+[Zhao et al., 2020]
+  Zhao, S., Liu, Z., Lin, J., Zhu, J. Y., & Han, S. (2020).
+  Differentiable augmentation for data-efficient GAN training.
+  Advances in Neural Information Processing Systems, 33.
